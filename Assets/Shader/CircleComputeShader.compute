@@ -1,0 +1,68 @@
+#pragma kernel CSMain
+#define PI 3.1415926535897932384626433832795f
+#define SEGMENTS 8
+
+// Define the shader buffers
+float radius;
+StructuredBuffer<float3> positionsBuffer;
+RWStructuredBuffer<float3> verticesBuffer;
+RWStructuredBuffer<uint> trianglesBuffer;
+
+// Kernel function to generate mesh vertices
+[numthreads(1, 1, 1)]
+void CSMain(uint3 threadId : SV_DispatchThreadID)
+{
+    // Fetch position for this thread
+    float3 particlePos = positionsBuffer[threadId.x];
+    
+    // Vertices and triangles arrays
+    float3 vertices[] = {
+        float3( 0.00,  0.00,  0.00) * radius,
+        float3( .707,  .707,  0.00) * radius,
+        float3( 0.00,  1.00,  0.00) * radius,
+        float3(-.707,  .707,  0.00) * radius,
+        float3(-1.00,  0.00,  0.00) * radius,
+        float3(-.707, -.707,  0.00) * radius,
+        float3( 0.00, -1.00,  0.00) * radius,
+        float3( .707, -.707,  0.00) * radius,
+        float3( 1.00,  0.00,  0.00) * radius
+    };
+    uint triangles[] = {
+        0, 1, 2,
+        0, 2, 3,
+        0, 3, 4,
+        0, 4, 5,
+        0, 5, 6,
+        0, 6, 7,
+        0, 7, 8,
+        0, 8, 1
+    };
+
+    // // Center vertex
+    // vertices[0] = particlePos;
+
+    // // Generate vertices
+    // float angleStep = 2 * PI / SEGMENTS;
+    // for (int i = 1; i < SEGMENTS + 1; i++)
+    // {
+    //     float angle = i * angleStep;
+    //     vertices[i] = particlePos + float3(cos(angle), sin(angle), 0);
+
+    //     triangles[(i - 1) * 3] = 0;
+    //     triangles[(i - 1) * 3 + 1] = i;
+    //     triangles[(i - 1) * 3 + 2] = i + 1;
+    // }
+
+    // Set the last triangle vertex to the original outside vertex
+    triangles[SEGMENTS * 3 - 1] = 1;
+
+    // Write to buffers
+    for (int k = 0; k < SEGMENTS + 1; k++)
+    {
+        verticesBuffer[(1 - 1) * (SEGMENTS + 1) + k] = vertices[k];
+    }
+    for (int j = 0; j < SEGMENTS * 3; j++)
+    {
+        trianglesBuffer[(1 - 1) * SEGMENTS * 3 + j] = triangles[j];
+    }
+}
