@@ -10,6 +10,7 @@ Shader "Unlit/CircleShader"
         _BgColor ("Background", Color) = (0, 0, 0, 0)
         _EdgeWidth ("Edge Width Percentage", Range(0, 0.1)) = 0.01
         _Thresh("SDF Threshold", Range(0, 4.0)) = 0.1
+        _SmoothingCoef("Smoothing Coefficient", Range(0, 1)) = 0.5
     }
     SubShader
     {
@@ -38,50 +39,50 @@ Shader "Unlit/CircleShader"
             float _Radius;
             int _NumPositions;
             sampler2D _PositionsTex;
-            float4 _Center;
             fixed4 _Color;
             fixed4 _BgColor;
             float _EdgeWidth;
             float _Thresh;
+            float _SmoothingCoef;
 
             v2f vert(appdata_t v)
             {
                 v2f o;
-                v.vertex.xy *= _Radius * 4;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.vertex.xy * 0.5 + 0.5; // Normalize to [0,1]
                 return o;
             }
 
-            float NearestCircleSDF(float2 pos) {
-                float minDist = 1e5; // A large value to start with
+            float SmoothingSDF(float2 pos) {
+                float minDist0 = 1e5; // The Smallest distance
+                float minDist1 = 1e5; // The Second smallest distance
                 
                 // Loop through circle positions and find the nearest distance
-                for (int i = 0; i < 1; ++i) {
-                    float2 center = tex2D(_PositionsTex, float2(i, 0)).xy * 0.5; // Normalize center to [0,1]
-                    float radius = _Radius;
+                for (int i = 0; i < _NumPositions; i++) {
+                    float2 center = tex2D(_PositionsTex, float2((i + 0.5)/(_NumPositions), 0.5)).rg; // Normalize center to [0,1]
                     
                     float dist = distance(pos, center);
-                    minDist = min(minDist, dist);
+
+                    minDist1 = min(minDist1, max(minDist0, dist));
+                    minDist0 = min(minDist0, dist);
                 }
-        
-                return minDist;
+                minDist0 = minDist0 - _Radius * _Radius;
+                minDist1 = minDist1 - _Radius * _Radius;
+
+                float k = _SmoothingCoef * _Radius;
+                float h = clamp(0.5 + 0.5 * (minDist1 - minDist0) / k, 0.0, 1.0);
+                return (lerp(minDist1, minDist0, h) - k * h * (1.0 - h)) - _Radius;
+
+                // return minDist0 - _Radius;
             }
 
             fixed4 frag(v2f i) : SV_Target
             {
-                // float dist = NearestCircleSDF(i.uv);
-
-                // Set color based on the signed distance
-                // float circle = 1- smoothstep(-_Thresh, _Thresh, dist);
-                // // if (circle < 0.01) discard;
-                // return fixed4(dist, dist, circle, 1.0);
-                
-                float2 center = tex2D(_PositionsTex, float2(0, 0)).rg; // Normalize center to [0,1]
-                float dist = distance(i.uv, center);
-                float circle = smoothstep(_Radius - _EdgeWidth * _Radius, _Radius, dist);
-                if (dist > _Radius) discard;
-                return fixed4(_Color.rgb * (1-circle) + _BgColor * circle, 1);
+                float dist = SmoothingSDF(i.uv.xy); 
+                float circle = smoothstep((_Thresh - _EdgeWidth) * _Radius - 0.001, _Thresh * _Radius, dist);
+                if (dist > _Thresh * _Radius) discard;
+                return fixed4(_Color.rgb * (1-circle) + _BgColor.rgb * circle, 1);
+                // return fixed4(tex2D(_PositionsTex, i.uv));
             }
             ENDCG
         }

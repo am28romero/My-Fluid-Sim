@@ -18,8 +18,8 @@ public class ParticleSpawner
     public SpawnData GetSpawnData(int particleCount)
     {
         Debug.Log("GetSpawnData() called");
-
-        SpawnData data = new(particleCount);
+        
+        spawnData = new SpawnData(particleCount);
         var rng = new Unity.Mathematics.Random(42);
 
         float2 s = spawnSize;
