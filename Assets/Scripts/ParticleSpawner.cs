@@ -1,7 +1,6 @@
 using System.Numerics;
 using UnityEditor;
 using UnityEngine;
-using Unity;
 using Vector2 = UnityEngine.Vector2;
 using Unity.Mathematics;
 
@@ -25,6 +24,7 @@ public class ParticleSpawner
         float2 s = spawnSize;
         int numX = Mathf.CeilToInt(Mathf.Sqrt(s.x / s.y * particleCount + (s.x - s.y) * (s.x - s.y) / (4 * s.y * s.y)) - (s.x - s.y) / (2 * s.y));
         int numY = Mathf.CeilToInt(particleCount / (float)numX);
+        Debug.Log("numX: " + numX + "\nnumY: " + numY);
         int i = 0;
 
         for (int y = 0; y < numY; y++)

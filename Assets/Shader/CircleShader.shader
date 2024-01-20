@@ -48,6 +48,7 @@ Shader "Unlit/CircleShader"
             v2f vert(appdata_t v)
             {
                 v2f o;
+                v.vertex.xy *= 10;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.vertex.xy * 0.5 + 0.5; // Normalize to [0,1]
                 return o;
@@ -82,7 +83,6 @@ Shader "Unlit/CircleShader"
                 float circle = smoothstep((_Thresh - _EdgeWidth) * _Radius - 0.001, _Thresh * _Radius, dist);
                 if (dist > _Thresh * _Radius) discard;
                 return fixed4(_Color.rgb * (1-circle) + _BgColor.rgb * circle, 1);
-                // return fixed4(tex2D(_PositionsTex, i.uv));
             }
             ENDCG
         }

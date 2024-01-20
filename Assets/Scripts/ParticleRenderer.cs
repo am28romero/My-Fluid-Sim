@@ -1,16 +1,16 @@
+// using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
-public class CircleDrawer : MonoBehaviour
+public class ParticleRenderer : MonoBehaviour
 {
     public Shader circleShader;
 
     [Range(0.0f, 1.0f)]
     public float radius = 0.5f;
     public Vector2[] positions = {};
-    public int numPositions = 1;
-    public Color color = new(1, 1, 1, 1);
+    public Color color = new(1, 1, 1, 1); 
     public Color bgColor = new(49, 77, 121, 0);
     [Range(0.0f, 1.0f)]
     public float edgeWidthPercentage = 0.2f;
@@ -19,26 +19,18 @@ public class CircleDrawer : MonoBehaviour
     [Range(0.0f, 2.0f)]
     public float smoothingCoef = 0.1f;
 
-    private void Start()
+    public ParticleRenderer(Vector2[] positions)
     {
         if (circleShader == null)
         {
             Debug.LogError("Circle shader not set!");
             return;
         }
-        if (positions.Length == 0)
-        {
-            positions = GetRandomPositions(numPositions);
-        }
+        this.positions = positions;
         CreateCircle();
     }
 
-    private void Update()
-    {
-        UpdateCircle();
-    }
-
-    private void CreateCircle()
+    public void CreateCircle()
     {
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
         if (meshRenderer != null && circleShader != null)
@@ -91,7 +83,7 @@ public class CircleDrawer : MonoBehaviour
         }
     }
 
-    private void UpdateCircle()
+    public void UpdateCircle()
     {
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
         if (meshRenderer != null && circleShader != null)
@@ -122,39 +114,10 @@ public class CircleDrawer : MonoBehaviour
         }
     }
 
-    private Vector2[] GetRandomPositions(int num)
+    public void SetPositions(Vector2[] pos)
     {
-        Vector2[] positions = new Vector2[num];
-        var rng = new Unity.Mathematics.Random(42);
-
-        for (int i = 0; i < num; i++)
-        {
-            positions[i] = new Vector2((float)(rng.NextDouble() * 2 - 1) * 4, ((float)rng.NextDouble() * 2 - 1) * 4);
-        }
-
-        return positions;
-    }
-
-    public Vector2[] GenerateGridParticles(Vector2 spawnSize, Vector2 spawnCenter, int particleAmount)
-    {
-        Vector2[] positions = new Vector2[particleAmount];
-
-        float stepX = spawnSize.x / Mathf.Sqrt(particleAmount);
-        float stepY = spawnSize.y / Mathf.Sqrt(particleAmount);
-
-        int index = 0;
-        for (float y = spawnCenter.y - spawnSize.y / 2; y < spawnCenter.y + spawnSize.y / 2; y += stepY)
-        {
-            for (float x = spawnCenter.x - spawnSize.x / 2; x < spawnCenter.x + spawnSize.x / 2; x += stepX)
-            {
-                positions[index] = new Vector2(x, y);
-                index++;
-
-                if (index >= particleAmount)
-                    break;
-            }
-        }
-
-        return positions;
+        positions = pos;
+        Debug.Log(pos.Length + "\n" + pos[0]);
+        Debug.Log(positions.Length + "\n" + positions[0]);
     }
 }
