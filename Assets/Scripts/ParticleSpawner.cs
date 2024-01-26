@@ -4,7 +4,7 @@ using UnityEngine;
 using Vector2 = UnityEngine.Vector2;
 using Unity.Mathematics;
 
-public class ParticleSpawner
+public class ParticleSpawner : MonoBehaviour
 {
     [SerializeField] private Vector2 initialVelocity = new(0.0f, 0.0f); // Initial speed of particles
     [SerializeField] private Vector2 spawnCenter = new(0.0f, 0.0f); // Centre of the spawn area
