@@ -13,11 +13,12 @@ public class Simulation : MonoBehaviour
     private BoxCollider2D boxCollider;
     [SerializeField] private ComputeShader simShader; // Reference to compute shader
     [SerializeField] private uint particleCount = 256; // Number of particles
+    [SerializeField] private bool spawnParticles = true; // Whether to spawn particles
     [SerializeField] private Vector2[] positions = {}; // Positions of particles
     [SerializeField] private Vector2[] velocities = {}; // Velocities of particles
     [SerializeField] private float gravity = 9.8f; // Gravity strength
     [SerializeField] private float timeStep = 1.0f; // Time step
-    [SerializeField] private uint iterations = 1; // Number of iterations per frame
+    [SerializeField] private uint iterations = 1; // Number of iterations per fram
     [SerializeField] private float collisionDamping = 0.9f; // Damping factor for collisions
     [SerializeField] private uint debugCode; // Debug code
     private int kernelIndex; // Index of kernel in compute shader
@@ -49,7 +50,7 @@ public class Simulation : MonoBehaviour
         
         if (DebugCode << 0 == 1) { Debug.Log(pRenderer.positions.Length); }
 
-        if (positions.Length == 0) {
+        if (positions.Length == 0 || spawnParticles) {
             spawnData = spawner.GetSpawnData((int) particleCount);
             positions = spawnData.positions;
             velocities = spawnData.velocities;
