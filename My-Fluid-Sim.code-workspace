@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "My-Fluid-Sim",
+			"path": "My-Fluid-Sim"
+		}
+	],
+	"settings": {
+		"dotnet.defaultSolution": "My-Fluid-Sim.sln"
+	}
+}

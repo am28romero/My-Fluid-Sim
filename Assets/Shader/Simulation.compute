@@ -1,13 +1,25 @@
-// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+RWStructuredBuffer<float2> _positions;
+RWStructuredBuffer<float2> _velocities;
+StructuredBuffer<float4> _colliders;
+StructuredBuffer<uint> _collInstructions; // 0: outsite/OR, 1: inside/AND
+float _DeltaTime;
+float2 _Gravity;
 
-[numthreads(8,8,1)]
+[numthreads(16, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
-    CircleSDF(id.xy, float2(512, 512), 100);
+    float2 position = _positions[id.x];
+    float2 velocity = _velocities[id.x];
+
+    // Update position
+    position += velocity * _DeltaTime;
+
+    // Update velocity
+    velocity += _Gravity * _DeltaTime;
+
+    // Write back
+    _positions[id.x] = position;
+    _velocities[id.x] = velocity;
 }
