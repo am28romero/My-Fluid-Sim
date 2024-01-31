@@ -22,6 +22,7 @@ public class Simulation : MonoBehaviour
     [SerializeField] private float collisionDamping = 0.9f; // Damping factor for collisions
     private ComputeBuffer positionBuffer; // Buffer for positions
     private ComputeBuffer velocityBuffer; // Buffer for velocities
+    private ComputeBuffer collidersBuffer; // Buffer for colliders
     private int kernelIndex; // Index of kernel in compute shader
     private float timer = 0.0f;
 
@@ -39,7 +40,7 @@ public class Simulation : MonoBehaviour
         positionBuffer = new ComputeBuffer(positions.Length, sizeof(float) * 2);
         velocityBuffer = new ComputeBuffer(velocities.Length, sizeof(float) * 2);
 
-        if (positions.Length == 0) {
+        if (positions.Length == 0 || spawnParticles) {
             spawnData = spawner.GetSpawnData((int) particleCount);
             positions = spawnData.positions;
             velocities = spawnData.velocities;
@@ -66,7 +67,14 @@ public class Simulation : MonoBehaviour
         float leftCollider = boxCollider.bounds.min.x;
         float rightCollider = boxCollider.bounds.max.x;
 
-        // Update positions and velocities
+        // Update positions and velocities in compute shader
+        positionBuffer.SetData(positions);
+        velocityBuffer.SetData(velocities);
+        simulationShader.SetFloat("_DeltaTime", Time.deltaTime);
+
+        simulationShader.SetBuffer(kernelIndex, "_positions", positionBuffer);
+        simulationShader.SetBuffer(kernelIndex, "_velocities", velocityBuffer);
+        
 
         for (int i = 0; i < positions.Length; i++)
         {
