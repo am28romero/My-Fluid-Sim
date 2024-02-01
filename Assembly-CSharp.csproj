@@ -73,7 +73,7 @@
   <ItemGroup>
     <None Include="Assets\Shader\Simulation.compute" />
     <None Include="Assets\Shader\CircleShader.shader" />
-    <None Include="Assets\Shader\CircleComputeShader.compute" />
+    <None Include="Assets\Shader\Circle.compute" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
