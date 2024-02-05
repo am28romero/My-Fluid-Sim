@@ -38,7 +38,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     v -= 2 * v * collisionFactor * _DampingFactor;
 
-    p = clamp(p, _Bounds.xz, _Bounds.yw);
+    // p = clamp(p, _Bounds.xz, _Bounds.yw);
+    p.y = clamp(p.y, _Bounds.z+0.1, _Bounds.w-0.1);
+    p.x = clamp(p.x, _Bounds.x+0.1, _Bounds.y-0.1);
 
     // Write back
     _positions[i] = p;
