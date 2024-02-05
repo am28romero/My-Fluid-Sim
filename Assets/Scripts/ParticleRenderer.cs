@@ -20,6 +20,14 @@ public class ParticleRenderer : MonoBehaviour
     [Range(0.0f, 2.0f)]
     public float smoothingCoef = 0.1f;
     [SerializeField] private Simulation sim;
+    [SerializeField] private uint debugCode = 0b1111;
+    /*
+                    * Debug code:
+                    * 0b0001: UpdateCircle posTex pixel values
+                    * 0b0010: SetPositions pos.Length
+                    * 0b0100: Unassigned
+                    * 0b1000: Unassigned
+    */
 
     public ParticleRenderer(Vector2[] positions)
     {
@@ -99,7 +107,7 @@ public class ParticleRenderer : MonoBehaviour
             }
             posTex.Apply();
 
-            if ((sim.DebugCode >> 1 & 1) == 1) { 
+            if ((debugCode & 1) == 1) { 
                 Debug.Log("1" + posTex.GetPixel(0, 0));
                 Debug.Log("2" + posTex.GetPixel(1, 0));
                 Debug.Log("3" + posTex.GetPixel(2, 0));
@@ -122,7 +130,7 @@ public class ParticleRenderer : MonoBehaviour
     public void SetPositions(Vector2[] pos)
     {
         positions = pos;
-        if ((sim.DebugCode >> 2 & 1) == 1) { 
+        if ((debugCode >> 1 & 1) == 1) { 
             Debug.Log(pos.Length + "\n" + pos[0]);
             Debug.Log(positions.Length + "\n" + positions[0]);
         }

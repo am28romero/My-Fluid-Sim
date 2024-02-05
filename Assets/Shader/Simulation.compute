@@ -3,26 +3,44 @@
 RWStructuredBuffer<float2> _positions;
 RWStructuredBuffer<float2> _velocities;
 uint _NumParticles;
-StructuredBuffer<float4> _colliders;
-StructuredBuffer<uint> _collInstructions; // 0: outsite, 1: inside
+float4 _Bounds;
 float _DeltaTime;
 float2 _Gravity;
+float _DampingFactor;
 
 [numthreads(1, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    if (id.x > _NumParticles)
+    uint i = id.x;
+    if (i > _NumParticles)
         return;
-    float2 position = _positions[id.x];
-    float2 velocity = _velocities[id.x];
+    float2 p = _positions[i];
+    float2 v = _velocities[i];
 
     // Update position
-    position += velocity * _DeltaTime;
+    p += v * _DeltaTime;
 
     // Update velocity
-    velocity += -_Gravity * _DeltaTime;
+    v += -_Gravity * _DeltaTime;
+
+    // Collision with bounds
+    float cdd = 0.1; // Collision detection distance
+    float2 collisionFactor = float2(
+        max(
+            max(0, sign(cdd - abs((p.x-cdd/2) - _Bounds.x))),
+            max(0, sign(cdd - abs(_Bounds.y - (p.x-cdd/2))))
+        ),
+        max(
+            max(0, sign(cdd - abs((p.y-cdd/2) - _Bounds.z))),
+            max(0, sign(cdd - abs(_Bounds.w - (p.y-cdd/2))))
+        )
+    );
+    
+    v -= 2 * v * collisionFactor * _DampingFactor;
+
+    p = clamp(p, _Bounds.xz, _Bounds.yw);
 
     // Write back
-    _positions[id.x] = position;
-    _velocities[id.x] = velocity;
+    _positions[i] = p;
+    _velocities[i] = v;
 }
