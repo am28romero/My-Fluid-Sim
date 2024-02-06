@@ -86,12 +86,12 @@ public class Simulation : MonoBehaviour
         float rightCollider = boxCollider.bounds.max.x;
 
         // Update positions and velocities in compute shader
-        // positionBuffer.SetData(positions);
-        // velocityBuffer.SetData(velocities);
-        // simShader.SetFloat("_DeltaTime", Time.deltaTime);
+        positionBuffer.SetData(positions);
+        velocityBuffer.SetData(velocities);
+        simShader.SetFloat("_DeltaTime", Time.deltaTime);
 
-        // simShader.SetBuffer(kernelIndex, "_positions", positionBuffer);
-        // simShader.SetBuffer(kernelIndex, "_velocities", velocityBuffer);
+        simShader.SetBuffer(kernelIndex, "_positions", positionBuffer);
+        simShader.SetBuffer(kernelIndex, "_velocities", velocityBuffer);
 
         // Update positions and velocities
         for (int i = 0; i < positions.Length; i++)

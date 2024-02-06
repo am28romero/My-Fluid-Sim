@@ -1,6 +1,5 @@
 #pragma kernel CSMain
 
-<<<<<<< HEAD
 RWStructuredBuffer<float2> _positions;
 RWStructuredBuffer<float2> _velocities;
 StructuredBuffer<float4> _colliders;
@@ -13,40 +12,14 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
     float2 position = _positions[id.x];
     float2 velocity = _velocities[id.x];
-=======
-const uint NUM_THREADS = 8;
-
-RWStructuredBuffer<float2> _positions;
-RWStructuredBuffer<float2> _velocities;
-StructuredBuffer<float4> _colliders;
-StructuredBuffer<uint> _collInstructions; // 0: outsite, 1: inside
-float _DeltaTime;
-float2 _Gravity;
-
-[numthreads(NUM_THREADS, 1, 1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
-{
-    uint index = id.x;
-    float2 position = _positions[index];
-    float2 velocity = _velocities[index];
->>>>>>> 072303f2b822f2361ebca83d82a04a9c479a90b1
 
     // Update position
     position += velocity * _DeltaTime;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 072303f2b822f2361ebca83d82a04a9c479a90b1
     // Update velocity
     velocity += _Gravity * _DeltaTime;
 
     // Write back
-<<<<<<< HEAD
     _positions[id.x] = position;
     _velocities[id.x] = velocity;
-=======
-    _positions[index] = position;
-    _velocities[index] = velocity;
->>>>>>> 072303f2b822f2361ebca83d82a04a9c479a90b1
 }
