@@ -19,7 +19,15 @@ public class ParticleRenderer : MonoBehaviour
     public float sdfThresh = 0.0f;
     [Range(0.0f, 2.0f)]
     public float smoothingCoef = 0.1f;
-    private Simulation sim;
+    [SerializeField] private Simulation sim;
+    [SerializeField] private uint debugCode = 0b1111;
+    /*
+                    * Debug code:
+                    * 0b0001: UpdateCircle posTex pixel values
+                    * 0b0010: SetPositions pos.Length
+                    * 0b0100: Unassigned
+                    * 0b1000: Unassigned
+    */
 
     public ParticleRenderer(Vector2[] positions)
     {
@@ -30,7 +38,7 @@ public class ParticleRenderer : MonoBehaviour
         }
         this.positions = positions;
         CreateCircle();
-        // sim = GetComponent<Simulation>();
+        sim = GetComponent<Simulation>();
     }
 
     public void CreateCircle()
@@ -99,12 +107,12 @@ public class ParticleRenderer : MonoBehaviour
             }
             posTex.Apply();
 
-            // if (sim.DebugCode << 1 == 1) { 
-            //     Debug.Log("1" + posTex.GetPixel(0, 0));
-            //     Debug.Log("2" + posTex.GetPixel(1, 0));
-            //     Debug.Log("3" + posTex.GetPixel(2, 0));
-            //     Debug.Log("4" + posTex.GetPixel(3, 0));
-            // }
+            if ((debugCode & 1) == 1) { 
+                Debug.Log("1" + posTex.GetPixel(0, 0));
+                Debug.Log("2" + posTex.GetPixel(1, 0));
+                Debug.Log("3" + posTex.GetPixel(2, 0));
+                Debug.Log("4" + posTex.GetPixel(3, 0));
+            }
             
             meshRenderer.material.SetFloat("_Radius", radius);
             meshRenderer.material.SetInt("_NumPositions", positions.Length);
@@ -122,9 +130,9 @@ public class ParticleRenderer : MonoBehaviour
     public void SetPositions(Vector2[] pos)
     {
         positions = pos;
-        // if (sim.DebugCode << 2 == 1) { 
-        //     Debug.Log(pos.Length + "\n" + pos[0]);
-        //     Debug.Log(positions.Length + "\n" + positions[0]);
-        // }
+        if ((debugCode >> 1 & 1) == 1) { 
+            Debug.Log(pos.Length + "\n" + pos[0]);
+            Debug.Log(positions.Length + "\n" + positions[0]);
+        }
     }
 }
