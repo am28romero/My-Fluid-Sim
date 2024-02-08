@@ -8,7 +8,23 @@ float _DeltaTime;
 float2 _Gravity;
 float _DampingFactor;
 
-[numthreads(1, 1, 1)]
+float2 CollisionDetection(float2 p, float2 v, float4 bounds, float dampingFactor, float cdd) {
+    float2 collisionFactor = float2(
+        max(
+            max(0, sign(cdd - abs((p.x-cdd/2) - bounds.x))),
+            max(0, sign(cdd - abs(bounds.y - (p.x-cdd/2))))
+        ),
+        max(
+            max(0, sign(cdd - abs((p.y-cdd/2) - bounds.z))),
+            max(0, sign(cdd - abs(bounds.w - (p.y-cdd/2))))
+        )
+    );
+    
+    v -= 2 * v * collisionFactor * dampingFactor;
+    return v;
+}
+
+[numthreads(16, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     uint i = id.x;
@@ -16,6 +32,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         return;
     float2 p = _positions[i];
     float2 v = _velocities[i];
+
+    // 
 
     // Update position
     p += v * _DeltaTime;
@@ -25,22 +43,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     // Collision with bounds
     float cdd = 0.1; // Collision detection distance
-    float2 collisionFactor = float2(
-        max(
-            max(0, sign(cdd - abs((p.x-cdd/2) - _Bounds.x))),
-            max(0, sign(cdd - abs(_Bounds.y - (p.x-cdd/2))))
-        ),
-        max(
-            max(0, sign(cdd - abs((p.y-cdd/2) - _Bounds.z))),
-            max(0, sign(cdd - abs(_Bounds.w - (p.y-cdd/2))))
-        )
-    );
-    
-    v -= 2 * v * collisionFactor * _DampingFactor;
+    v = CollisionDetection(p, v, _Bounds, _DampingFactor, cdd);
 
     // p = clamp(p, _Bounds.xz, _Bounds.yw);
-    p.y = clamp(p.y, _Bounds.z+0.1, _Bounds.w-0.1);
-    p.x = clamp(p.x, _Bounds.x+0.1, _Bounds.y-0.1);
+    cdd = 0;
+    p.y = clamp(p.y, _Bounds.z+cdd, _Bounds.w-cdd);
+    p.x = clamp(p.x, _Bounds.x+cdd, _Bounds.y-cdd);
 
     // Write back
     _positions[i] = p;
