@@ -435,6 +435,8 @@ MonoBehaviour:
   edgeWidthPercentage: 0
   sdfThresh: 0
   smoothingCoef: 0
+  sim: {fileID: 1321011779}
+  debugCode: 0
 --- !u!114 &1321011779
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -448,13 +450,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simShader: {fileID: 7200000, guid: 10f14242ac7c6e2458cfde22f9500dd5, type: 3}
-  particleCount: 64
+  particleCount: 1
+  spawnParticles: 1
   positions: []
   velocities: []
-  gravity: 10
+  gravity: {x: 0, y: 9.8}
   timeStep: 0
   iterations: 1
   collisionDamping: 0.9
+  debugCode: 0
 --- !u!114 &1321011780
 MonoBehaviour:
   m_ObjectHideFlags: 0

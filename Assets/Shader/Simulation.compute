@@ -1,4 +1,5 @@
 #pragma kernel CSMain
+#pragma kernel CSCollision
 
 RWStructuredBuffer<float2> _positions;
 RWStructuredBuffer<float2> _velocities;
@@ -8,20 +9,37 @@ float _DeltaTime;
 float2 _Gravity;
 float _DampingFactor;
 
-float2 CollisionDetection(float2 p, float2 v, float4 bounds, float dampingFactor, float cdd) {
+[numthreads(16, 1, 1)]
+void CSCollision(uint3 id : SV_DISPATCHTHREADID) {
+    uint i = id.x;
+    if (i > _NumParticles)
+        return;
+    float2 p = _positions[i];
+    float2 v = _velocities[i];
+
+    // Collision with bounds
+    float cdd = 0.1; // Collision detection distance
     float2 collisionFactor = float2(
         max(
-            max(0, sign(cdd - abs((p.x-cdd/2) - bounds.x))),
-            max(0, sign(cdd - abs(bounds.y - (p.x-cdd/2))))
+            max(0, sign(cdd - abs((p.x-cdd/2) - _Bounds.x))),
+            max(0, sign(cdd - abs(_Bounds.y - (p.x-cdd/2))))
         ),
         max(
-            max(0, sign(cdd - abs((p.y-cdd/2) - bounds.z))),
-            max(0, sign(cdd - abs(bounds.w - (p.y-cdd/2))))
+            max(0, sign(cdd - abs((p.y-cdd/2) - _Bounds.z))),
+            max(0, sign(cdd - abs(_Bounds.w - (p.y-cdd/2))))
         )
     );
-    
-    v -= 2 * v * collisionFactor * dampingFactor;
-    return v;
+
+    v -= 2 * v * collisionFactor * _DampingFactor;
+
+    // p = clamp(p, _Bounds.xz, _Bounds.yw);
+    cdd = 0.
+    ;p.y = clamp(p.y, _Bounds.z+cdd, _Bounds.w-cdd);
+    p.x = clamp(p.x, _Bounds.x+cdd, _Bounds.y-cdd);
+
+    // Write back
+    _positions[i] = p;
+    _velocities[i] = v;
 }
 
 [numthreads(16, 1, 1)]
@@ -33,22 +51,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float2 p = _positions[i];
     float2 v = _velocities[i];
 
-    // 
-
     // Update position
     p += v * _DeltaTime;
 
     // Update velocity
     v += -_Gravity * _DeltaTime;
-
-    // Collision with bounds
-    float cdd = 0.1; // Collision detection distance
-    v = CollisionDetection(p, v, _Bounds, _DampingFactor, cdd);
-
-    // p = clamp(p, _Bounds.xz, _Bounds.yw);
-    cdd = 0;
-    p.y = clamp(p.y, _Bounds.z+cdd, _Bounds.w-cdd);
-    p.x = clamp(p.x, _Bounds.x+cdd, _Bounds.y-cdd);
 
     // Write back
     _positions[i] = p;

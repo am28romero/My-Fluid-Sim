@@ -28,7 +28,8 @@ public class Simulation : MonoBehaviour
                     * 0b0100: Unassigned
                     * 0b1000: Unassigned
     */
-    private int kernelIndex; // Index of kernel in compute shader
+    private int mainKernelIndex; // Index of kernel in compute shader
+    private int collisionKernelIndex; // Index of kernel for collision in compute shader
     private ComputeBuffer positionBuffer; // Buffer for positions
     private ComputeBuffer velocityBuffer; // Buffer for velocities
 
@@ -49,7 +50,8 @@ public class Simulation : MonoBehaviour
         }
 
         // Get kernel index and create buffers
-        kernelIndex = simShader.FindKernel("CSMain");
+        mainKernelIndex = simShader.FindKernel("CSMain");
+        collisionKernelIndex = simShader.FindKernel("CSCollision");
         positionBuffer = new ComputeBuffer(positions.Length, sizeof(float) * 2);
         velocityBuffer = new ComputeBuffer(velocities.Length, sizeof(float) * 2);
         // colliderBuffer = new ComputeBuffer(1, sizeof(float) * 4);
@@ -78,17 +80,29 @@ public class Simulation : MonoBehaviour
         for (int i = 1; i <= iterations; i++)
         {
             // Update positions and velocities in compute shader
-            positionBuffer.SetData(Vector2ToFloat2(pos));
-            velocityBuffer.SetData(Vector2ToFloat2(velo));
-            simShader.SetBuffer(kernelIndex, "_positions", positionBuffer);
-            simShader.SetBuffer(kernelIndex, "_velocities", velocityBuffer);
+            positionBuffer.SetData(pos);
+            velocityBuffer.SetData(velo);
+            simShader.SetBuffer(mainKernelIndex, "_positions", positionBuffer);
+            simShader.SetBuffer(mainKernelIndex, "_velocities", velocityBuffer);
 
-            simShader.Dispatch(kernelIndex, positions.Length, 1, 1);
+            simShader.Dispatch(mainKernelIndex, positions.Length, 1, 1);
 
             // Update positions and velocities
             positionBuffer.GetData(pos);
             velocityBuffer.GetData(velo);
         }
+
+        // Update positions and velocities
+        positionBuffer.SetData(pos);
+        velocityBuffer.SetData(velo);
+        simShader.SetBuffer(collisionKernelIndex, "_positions", positionBuffer);
+        simShader.SetBuffer(collisionKernelIndex, "_velocities", velocityBuffer);
+
+        simShader.Dispatch(collisionKernelIndex, positions.Length, 1, 1);
+
+        // Update positions and velocities
+        positionBuffer.GetData(pos);
+        velocityBuffer.GetData(velo);
 
         /* for (int i = 0; i < positions.Length; i++)
         {
